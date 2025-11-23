@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lisn — Аудио-тренер английского</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+            colors: {
+              brand: '#47A6FF',
+              gold: '#EBB53F',
+              slateDeep: '#0F172A',
+              slateText: '#475569',
+              lightSection: '#F8FAFC',
+            },
+            boxShadow: {
+              card: '0 16px 50px rgba(15, 23, 42, 0.08)',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          sans-serif;
+      }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" data-presets="env,react">
+      const { useState } = React;
+
+      const CheckIcon = (props) => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          {...props}
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      );
+
+      const PlayIcon = (props) => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          {...props}
+        >
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+      );
+
+      const GlobeIcon = (props) => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          {...props}
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" />
+        </svg>
+      );
+
+      const StarIcon = (props) => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          {...props}
+        >
+          <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9 12 2" />
+        </svg>
+      );
+
+      const StoreBadge = ({ platform, label }) => (
+        <button className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-slateDeep shadow-sm transition hover:-translate-y-0.5 hover:shadow-card">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slateDeep text-white">
+            {platform === 'apple' ? (
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+                <path d="M16.365 1.43c0 .98-.36 1.92-1.04 2.65-.75.83-1.98 1.49-3.16 1.4-.1-1.02.38-2.09 1-2.79.76-.86 2.04-1.5 3.2-1.61.02.12.02.23.02.35zM19.74 18.2c-.52 1.15-1.16 2.28-2.06 2.28-.88 0-1.16-.74-2.24-.74s-1.4.72-2.28.72c-.9 0-1.52-1.05-2.06-2.18-.67-1.36-1.2-3.44-.5-4.95.72-1.56 2.34-1.65 2.84-1.65.82 0 1.32.34 1.99.34.64 0 1.15-.34 1.96-.34.5 0 2.12.05 2.86 1.62.02.02.02.04.02.06-.06.03-1.88.73-1.86 2.73 0 2.17 1.84 2.88 1.93 2.91.02.03 0 .08 0 .1z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+                <path d="M3.9 2.7c-.23.26-.37.68-.37 1.28v15.94c0 .6.14 1.02.37 1.28l.06.06 8.87-9.03-8.93-9.06zM14.53 8.4l-1.65 1.67 1.67 1.7 2.96-2.97-2.98-2.98-1.67 1.67 1.67 1.91zM19.7 11.92l-2.33 2.34 2.33 2.33c.37-.26.6-.85.6-1.7v-1.26c0-.9-.2-1.51-.6-1.71zM14.64 15.17l-1.81 1.83 1.67 1.7 2.97-2.98-2.98-2.98-1.68 1.68 1.83 1.75z" />
+              </svg>
+            )}
+          </div>
+          <div className="flex flex-col items-start text-left text-sm">
+            <span className="text-xs text-slateText">Доступно в</span>
+            <span className="font-semibold">{label}</span>
+          </div>
+        </button>
+      );
+
+      const BentoCard = ({ title, description, image, align = 'center' }) => (
+        <div className="flex h-full flex-col justify-between rounded-2xl bg-white p-6 shadow-card">
+          <div className={`flex ${align === 'center' ? 'justify-center' : ''}`}>
+            <div className="flex h-28 w-full items-center justify-center rounded-xl bg-lightSection text-brand">
+              {image}
+            </div>
+          </div>
+          <div className="mt-6 text-slateDeep">
+            <h3 className="mb-2 text-lg font-semibold leading-snug">{title}</h3>
+            <p className={`text-sm text-slateText ${align === 'center' ? 'text-center' : ''}`}>
+              {description}
+            </p>
+          </div>
+        </div>
+      );
+
+      const LanguageSelect = () => {
+        const [open, setOpen] = useState(false);
+        const [language, setLanguage] = useState('Русский');
+
+        const options = ['Русский', 'English', 'Español'];
+
+        return (
+          <div className="relative">
+            <button
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slateDeep shadow-sm transition hover:border-brand"
+            >
+              <GlobeIcon className="h-4 w-4" />
+              <span>Сменить язык: {language}</span>
+              <svg viewBox="0 0 24 24" className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {open && (
+              <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white p-2 shadow-card">
+                {options.map((opt) => (
+                  <button
+                    key={opt}
+                    className={`w-full rounded-lg px-3 py-2 text-left text-sm transition hover:bg-lightSection ${opt === language ? 'font-semibold text-brand' : 'text-slateDeep'}`}
+                    onClick={() => {
+                      setLanguage(opt);
+                      setOpen(false);
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const FeatureList = ({ items }) => (
+        <div className="grid gap-3">
+          {items.map((item) => (
+            <div key={item} className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
+              <div className="mt-0.5 rounded-full bg-brand/10 p-2 text-brand">
+                <CheckIcon className="h-4 w-4" />
+              </div>
+              <p className="text-sm text-slateDeep">{item}</p>
+            </div>
+          ))}
+        </div>
+      );
+
+      const SectionShell = ({ id, title, subtitle, children, muted = false }) => (
+        <section id={id} className={`${muted ? 'bg-lightSection' : 'bg-white'} py-16 lg:py-24`}>
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            {title && (
+              <div className="max-w-3xl">
+                <h2 className="text-3xl font-semibold tracking-tight text-slateDeep sm:text-4xl">{title}</h2>
+                {subtitle && <p className="mt-4 text-lg text-slateText">{subtitle}</p>}
+              </div>
+            )}
+            <div className="mt-10 lg:mt-14">{children}</div>
+          </div>
+        </section>
+      );
+
+      const Hero = () => (
+        <section className="bg-white pb-16 pt-10 lg:pt-16">
+          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-4 sm:px-6 lg:flex-row lg:items-start lg:gap-16 lg:px-8">
+            <div className="flex-1 space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-lightSection px-3 py-1 text-xs font-medium text-slateText shadow-sm ring-1 ring-slate-100">
+                ⭐️ 4.9 Рейтинг в сторах
+              </div>
+              <div className="space-y-4">
+                <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slateDeep sm:text-5xl">
+                  Заговорите на английском за 30 часов.
+                </h1>
+                <p className="text-lg text-slateText">
+                  Слушайте, повторяйте и запоминайте фразы целиком со всей нужной грамматикой и предлогами
+                </p>
+                <p className="text-base text-slateText">
+                  Приложение с аудио уроками английского , которое реально поможет заговорить на английском
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <StoreBadge platform="apple" label="App Store" />
+                <StoreBadge platform="android" label="Google Play" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="relative isolate rounded-[32px] bg-lightSection p-6 shadow-card">
+                <div className="absolute inset-0 -z-10 rounded-[32px] bg-gradient-to-br from-brand/10 via-white to-gold/10" />
+                <div className="mx-auto h-[520px] max-w-[320px] rounded-[28px] border border-slate-100 bg-white p-6 shadow-card">
+                  <div className="mx-auto flex h-full flex-col rounded-2xl bg-slateDeep/90 p-6 text-white">
+                    <div className="mb-8 flex items-center justify-between text-sm text-white/70">
+                      <span>Lisn • Аудио</span>
+                      <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
+                        <StarIcon className="h-4 w-4 text-gold" />
+                        <span>4.9</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-1 flex-col items-center justify-center gap-6">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/10">
+                        <button className="flex h-16 w-16 items-center justify-center rounded-full bg-brand text-white shadow-lg transition hover:scale-105">
+                          <PlayIcon className="h-7 w-7" />
+                        </button>
+                      </div>
+                      <div className="space-y-3 text-center">
+                        <p className="text-xs uppercase tracking-[0.2em] text-white/60">Shadowing</p>
+                        <h3 className="text-2xl font-semibold">Включите урок и говорите вместе с диктором</h3>
+                        <p className="text-sm text-white/70">Учитесь за рулём, дома или на прогулке. Без экрана.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+
+      const ComparisonTable = () => {
+        const rows = [
+          { label: 'Практика речи', lisn: '✔️', d: '❌', courses: 'частично', tutor: '✔️' },
+          { label: 'Занятия за рулём', lisn: '✔️', d: '❌', courses: '❌', tutor: '❌' },
+          { label: 'Нужен экран?', lisn: '❌', d: '✔️', courses: '✔️', tutor: '✔️' },
+          { label: 'Короткие уроки', lisn: '✔️', d: '✔️', courses: '❌', tutor: '❌' },
+          { label: 'Цена', lisn: 'низкая', d: 'низкая', courses: 'высокая', tutor: 'очень высокая' },
+          { label: 'Личный план', lisn: '✔️', d: '❌', courses: 'частично', tutor: '✔️' },
+          { label: 'Мини-курсы ситуаций', lisn: '✔️', d: '❌', courses: '❌', tutor: '❌' },
+        ];
+        return (
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
+            <div className="grid grid-cols-4 bg-lightSection px-6 py-4 text-sm font-semibold text-slateDeep md:grid-cols-5">
+              <span> </span>
+              <span>Lisn</span>
+              <span>Duolingo</span>
+              <span>Курсы</span>
+              <span className="hidden md:block">Репетитор</span>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {rows.map((row) => (
+                <div key={row.label} className="grid grid-cols-4 items-center px-6 py-4 text-sm text-slateDeep md:grid-cols-5">
+                  <span className="font-medium">{row.label}</span>
+                  <span className="font-semibold text-brand">{row.lisn}</span>
+                  <span>{row.d}</span>
+                  <span>{row.courses}</span>
+                  <span className="hidden md:block">{row.tutor}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      const FAQ = () => {
+        const items = [
+          { q: 'Можно ли заниматься за рулём?', a: 'Да. У нас оффлайн-режим и формат без экрана.' },
+          { q: 'Подойдёт ли с нуля?', a: 'Да, для нулевого уровня у нас есть отдельная программа.' },
+          { q: 'Сколько нужно времени в день?', a: '10–15 минут.' },
+          { q: 'Нужны ли упражнения и грамматика?', a: 'Нет. Вы учите готовые фразы и говорите.' },
+        ];
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            {items.map((item) => (
+              <div key={item.q} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <h4 className="text-lg font-semibold text-slateDeep">{item.q}</h4>
+                <p className="mt-2 text-sm text-slateText">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        );
+      };
+
+      const BlogCards = () => {
+        const posts = [
+          {
+            title: 'Как тренировать речь в машине: 5 приёмов',
+            excerpt: 'Превратите поездки в полноценные уроки. Советы от методистов Lisn.',
+          },
+          {
+            title: 'Shadowing: техника, которая ставит речь на автомат',
+            excerpt: 'Почему повторение за диктором эффективнее правил и упражнений.',
+          },
+          {
+            title: 'Как не выгореть, изучая язык после работы',
+            excerpt: 'Мини-ритуалы и привычки, которые помогут заниматься ежедневно.',
+          },
+        ];
+        return (
+          <div className="grid gap-6 md:grid-cols-3">
+            {posts.map((post) => (
+              <article key={post.title} className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-card transition hover:-translate-y-1">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                  <GlobeIcon className="h-5 w-5" />
+                </div>
+                <h4 className="text-lg font-semibold text-slateDeep group-hover:text-brand">{post.title}</h4>
+                <p className="mt-2 text-sm text-slateText">{post.excerpt}</p>
+                <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand">
+                  Читать статью
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </button>
+              </article>
+            ))}
+          </div>
+        );
+      };
+
+      const App = () => {
+        const audience = [
+          'живёте за границей и пытаетесь интегрироваться в общество',
+          'боитесь ошибок и застреваете перед фразой',
+          'начинали сотни раз, но не доводили до результата',
+          'чувствуете, что «учите уже годами, а говорить всё ещё сложно»',
+          'ищете способ заниматься без стресса и без экрана',
+          'не хотите зубрить грамматику',
+          'вам 30+, 40+, 50+ и нужен практичный язык',
+        ];
+
+        const inside = [
+          '150+ уроков, построенных так, чтобы вы говорили, а не повторяли правила',
+          '45+ мини-курсов по реальным ситуациям: в аптеке, у врача, в школе, на работе, по телефону, аренда жилья',
+          'Практика речи в каждом уроке — без неё нет результата',
+          'Shadowing-методика: говорите вслед за диктором',
+          'Оффлайн-режим — учитесь в любой момент',
+          'Новый контент каждую неделю',
+          'Личный план обучения (второй раз усиливаем!)',
+          'Статистика прогресса, streak-мотивация, достижения',
+        ];
+
+        const whyAudio = [
+          'Вы не просто слушаете — вы повторяете вслух → навыки закрепляются',
+          'Вы учитесь фразами, а не отдельными словами',
+          'Вы слышите реальные диалоги, а не искусственные задания',
+          'Вы занимаетесь без экрана → учёба становится частью дня',
+          'Вы не устаете → занятия проходят естественно',
+          'Результат: вы не просто «повышаете уровень», вы реально говорите.',
+        ];
+
+        const lessonFlow = [
+          'Диалог: — Can I get a coffee, please? — Sure. Anything else?',
+          'Разбор фраз',
+          'Повторение за диктором',
+          'Мини-практика',
+          'Закрепление',
+          'Этот формат прокачивает речь в 3–5 раз быстрее, чем учебники.',
+        ];
+
+        return (
+          <div className="bg-white text-slateDeep">
+            <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur">
+              <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+                <div className="flex items-center gap-10">
+                  <div className="text-xl font-bold tracking-tight text-slateDeep">LISN</div>
+                  <nav className="hidden items-center gap-6 text-sm font-medium text-slateText md:flex">
+                    {['Как это работает', 'Курсы', 'Отзывы', 'Сервисы', 'Блог'].map((link) => (
+                      <a key={link} href="#" className="transition hover:text-brand">
+                        {link}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slateDeep transition hover:border-brand hover:text-brand sm:block">
+                    Скачать
+                  </button>
+                  <LanguageSelect />
+                </div>
+              </div>
+            </header>
+
+            <main>
+              <Hero />
+
+              <SectionShell
+                id="pain"
+                muted
+                title="Перестаньте бояться английского. Начните говорить уверенно — уже через 14 дней."
+                subtitle="Lisn — аудио-уроки, которые обучают вас так, как работает мозг: слушаете → повторяете → говорите. Подходит, даже если вы десятки раз пытались и бросали."
+              >
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                  <button className="inline-flex items-center justify-center rounded-full bg-brand px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand/30 transition hover:-translate-y-0.5">
+                    Начать бесплатно
+                  </button>
+                  <FeatureList
+                    items={[
+                      '90% взрослых боятся говорить по-английски, даже зная слова.',
+                      'Проблема — в отсутствии реальной речевой практики.',
+                      'Каждый урок — тренировка речи: повторяете за диктором и говорите уверенно.',
+                    ]}
+                  />
+                </div>
+              </SectionShell>
+
+              <SectionShell
+                id="promise"
+                title="Вы учите английский годами, но всё ещё не можете говорить? Вы не один."
+                subtitle="90% взрослых боятся говорить по-английски, даже зная слова. Проблема не в грамматике. Проблема — в отсутствии реальной речевой практики. Lisn решает это за вас. Каждый урок — это тренировка речи, где вы повторяете за диктором и автоматически начинаете говорить гораздо увереннее."
+              >
+                <div className="grid gap-6 lg:grid-cols-3">
+                  <div className="rounded-2xl bg-brand/10 p-6 text-brand">
+                    <h3 className="text-xl font-semibold text-slateDeep">Мы учим английскому так, чтобы вы заговорили, а не просто «позанимались».</h3>
+                    <p className="mt-3 text-slateText">Shadowing-методика, реальные ситуации и оффлайн-режим.</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-6 shadow-card">
+                    <h4 className="text-lg font-semibold text-slateDeep">Вы слушаете короткий диалог</h4>
+                    <p className="mt-2 text-sm text-slateText">Живые ситуации: в магазине, в аэропорту, у врача, на работе.</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-6 shadow-card">
+                    <h4 className="text-lg font-semibold text-slateDeep">Вы повторяете за диктором вслух</h4>
+                    <p className="mt-2 text-sm text-slateText">Метод shadowing формирует автоматическую речь.</p>
+                  </div>
+                </div>
+              </SectionShell>
+
+              <SectionShell
+                id="how"
+                muted
+                title="Мы учим английскому так, чтобы вы заговорили, а не просто «позанимались»."
+                subtitle="Слушаете, повторяете, закрепляете — и говорите уверенно, без страха."
+              >
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    'Вы слушаете короткий диалог',
+                    'Вы повторяете за диктором вслух',
+                    'Вы закрепляете фразы практикой',
+                    'Всё происходит за рулём, дома или в очереди',
+                  ].map((item) => (
+                    <div key={item} className="rounded-2xl bg-white p-5 text-slateDeep shadow-card">
+                      <h4 className="mb-2 text-lg font-semibold">{item}</h4>
+                      <p className="text-sm text-slateText">Просто включили — и учите. Без экрана. Без учебников.</p>
+                    </div>
+                  ))}
+                </div>
+              </SectionShell>
+
+              <SectionShell
+                id="plan"
+                title="Личный план обучения - Ваша точка роста"
+                subtitle="Lisn создаёт персональный, структурированный план, который ведёт вас шаг за шагом. Это не просто выбор уроков. Это полностью построенная траектория обучения, которая доводит до результата."
+              >
+                <div className="grid gap-6 lg:grid-cols-3">
+                  <div className="grid gap-6">
+                    <BentoCard
+                      title="начинаете с уровня, который подходит именно вам"
+                      description="Старт — с того, что актуально. Никаких лишних тем."
+                      align="center"
+                      image={<div className="text-xl font-semibold">App of the day</div>}
+                    />
+                    <BentoCard
+                      title="Ежедневно следуете плану обучения, который ведет вас к цели"
+                      description="Маршрут прост и прозрачен: видите шаги и прогресс."
+                      align="center"
+                      image={<div className="text-lg font-semibold">Карта обучения</div>}
+                    />
+                  </div>
+                  <div className="grid gap-6">
+                    <BentoCard
+                      title="проходите темы последовательно, а не хаотично"
+                      description="Шаг 1 → Шаг 2 → Шаг 3. Всё логично и по нарастающей."
+                      align="left"
+                      image={<div className="text-lg font-semibold">1 • 2 • 3</div>}
+                    />
+                    <BentoCard
+                      title="Изучаете реальные ситуации, которые происходят в повседневной жизни"
+                      description="Диалоги в аптеке, на работе, с соседями — всё, что нужно ежедневно."
+                      align="left"
+                      image={<div className="text-lg font-semibold">Live scenes</div>}
+                    />
+                  </div>
+                  <div className="grid gap-6">
+                    <BentoCard
+                      title="Двигаетесь системно, от простого - к сложному."
+                      description="Каждый шаг — новая уверенность. Вы чувствуете рост."
+                      align="left"
+                      image={<div className="text-lg font-semibold">A → B → C</div>}
+                    />
+                    <BentoCard
+                      title="Чувствуете прогресс по каждому навыку владения английским"
+                      description="Прогрессбар, достижения и streak — вы видите, как растёте."
+                      align="left"
+                      image={<div className="text-lg font-semibold">Progress ↑</div>}
+                    />
+                  </div>
+                </div>
+              </SectionShell>
+
+              <SectionShell
+                id="audience"
+                muted
+                title="Если вы хотите говорить по-английски в реальной жизни — Lisn создан для вас."
+                subtitle="Подходит, если вы..."
+              >
+                <FeatureList items={audience} />
+              </SectionShell>
+
+              <SectionShell id="inside" title="Всё, что нужно, чтобы наконец заговорить">
+                <FeatureList items={inside} />
+              </SectionShell>
+
+              <SectionShell
+                id="why"
+                muted
+                title="Большинство приложений учит вас кликать по упражнениям. Lisn учит вас ГОВОРИТЬ."
+              >
+                <FeatureList items={whyAudio} />
+              </SectionShell>
+
+              <SectionShell id="lesson" title="Как проходит один урок? Показываем честно.">
+                <FeatureList items={lessonFlow} />
+              </SectionShell>
+
+              <SectionShell
+                id="social"
+                muted
+                title="Истории пользователей, которые наконец начали говорить"
+              >
+                <div className="grid gap-6 md:grid-cols-3">
+                  {[
+                    '«Живу в Америке. Впервые начала понимать кассиров. Спустя две недели!»',
+                    '«Я боялась говорить. Lisn буквально вытащил меня из этого состояния. Теперь спокойно отвечаю людям.»',
+                    '«Идеально для тех, у кого нет времени. Именно благодаря аудио-формату я занимаюсь каждый день.»',
+                  ].map((quote, idx) => (
+                    <div key={idx} className="flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+                      <div className="mb-3 flex items-center gap-1 text-gold">
+                        {'⭐️'.repeat(5)}
+                      </div>
+                      <p className="text-sm text-slateDeep">{quote}</p>
+                    </div>
+                  ))}
+                </div>
+              </SectionShell>
+
+              <SectionShell id="compare" title="Сравнение с другими" subtitle="Честно показываем, за что вы платите.">
+                <ComparisonTable />
+              </SectionShell>
+
+              <SectionShell id="faq" muted title="FAQ">
+                <FAQ />
+              </SectionShell>
+
+              <SectionShell
+                id="final"
+                title="Если вы действительно хотите говорить по-английски — начните сегодня."
+                subtitle="Уроки, которые легко встроить в ваш день. Структурированный план, который ведёт к результату. Реальная практика речи. И первые улучшения — через 14 дней."
+              >
+                <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+                  <div className="space-y-6">
+                    <button className="inline-flex items-center justify-center rounded-full bg-brand px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand/30 transition hover:-translate-y-0.5">
+                      Начать бесплатно
+                    </button>
+                    <p className="text-xs text-slateText">Вы можете отменить подписку в любой момент</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-100 bg-lightSection p-6 shadow-card">
+                    <h4 className="text-lg font-semibold text-slateDeep">Пример урока</h4>
+                    <div className="mt-3 space-y-2 text-sm text-slateText">
+                      <p>Диалог: — Can I get a coffee, please? — Sure. Anything else?</p>
+                      <p>Разбор фраз → Повторение за диктором → Мини-практика → Закрепление</p>
+                      <p className="font-medium text-slateDeep">Этот формат прокачивает речь в 3–5 раз быстрее, чем учебники.</p>
+                    </div>
+                  </div>
+                </div>
+              </SectionShell>
+
+              <SectionShell id="blog" muted title="Блог">
+                <BlogCards />
+              </SectionShell>
+            </main>
+
+            <footer className="border-t border-slate-100 bg-white py-10">
+              <div className="mx-auto flex w-full max-w-6xl flex-col justify-between gap-4 px-4 sm:px-6 lg:flex-row lg:px-8">
+                <div className="text-lg font-bold text-slateDeep">LISN</div>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-slateText">
+                  <span>© Lisn, 2024</span>
+                  <span>Политика конфиденциальности</span>
+                  <span>Поддержка</span>
+                </div>
+              </div>
+            </footer>
+          </div>
+        );
+      };
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </head>
+  <body class="bg-white">
+    <div id="root"></div>
+  </body>
+</html>
